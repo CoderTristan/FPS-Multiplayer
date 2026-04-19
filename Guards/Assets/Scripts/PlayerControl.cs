@@ -19,6 +19,9 @@ public class PlayerControl : MonoBehaviour
     public float maxPitch = 80f;
     public bool invertY = false;
 
+    [Header("Interaction")]
+    public float interactRange = 3f;
+
     private Vector2 moveInput;
     private Vector2 lookInput;
     private Vector3 velocity;
@@ -33,36 +36,33 @@ public class PlayerControl : MonoBehaviour
     }
 
     private void HandleMovement()
-{
-    float g = Physics.gravity.y * gravityMultiplier;
-
-    if (controller.isGrounded)
     {
-        if (velocity.y < 0)
-            velocity.y = -2f;
+        float g = Physics.gravity.y * gravityMultiplier;
 
-        if (jumpRequested)
+        if (controller.isGrounded)
         {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * g);
-            jumpRequested = false;
+            if (velocity.y < 0)
+                velocity.y = -2f;
+
+            if (jumpRequested)
+            {
+                velocity.y = Mathf.Sqrt(jumpHeight * -2f * g);
+                jumpRequested = false;
+            }
         }
+        else
+        {
+            velocity.y += g * Time.deltaTime;
+        }
+
+        Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
+        float speed = isRunning ? runSpeed : walkSpeed;
+
+        Vector3 finalMove = move * speed + new Vector3(0, velocity.y, 0);
+        controller.Move(finalMove * Time.deltaTime);
     }
-    else
-    {
-        // Apply gravity
-        velocity.y += g * Time.deltaTime;
-    }
 
-    // Horizontal movement
-    Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
-    float speed = isRunning ? runSpeed : walkSpeed;
-
-    Vector3 finalMove = move * speed + new Vector3(0, velocity.y, 0);
-
-    controller.Move(finalMove * Time.deltaTime);
-}
-
-private void HandleLook()
+    private void HandleLook()
     {
         float dt = Time.deltaTime;
 
@@ -86,5 +86,26 @@ private void HandleLook()
     {
         if (controller.isGrounded)
             jumpRequested = true;
+    }
+
+    // -------------------------
+    //      INTERACTION
+    // -------------------------
+    private void OnAttack()
+    {
+        Ray ray = new Ray(cameraTarget.position, cameraTarget.forward);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, interactRange))
+        {
+            // Tag check
+            if (hit.collider.CompareTag("PickUp"))
+            {
+                // Component check
+                if (hit.collider.TryGetComponent(out PickUp pickup))
+                {
+                    pickup.PickUpItem();
+                }
+            }
+        }
     }
 }
