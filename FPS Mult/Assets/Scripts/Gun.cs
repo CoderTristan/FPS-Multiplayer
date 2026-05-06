@@ -25,7 +25,5 @@ public class Gun : NetworkBehaviour
         }
         if (!hit.transform.TryGetComponent(out PlayerHealth playerHealth)) return;
         playerHealth.ChangeHealth(-damage);
-
-        Debug.Log($"Hit {hit.transform.name}");
     }
 }
