@@ -70,38 +70,36 @@ public class Gun : StateNode
 
     public override void StateUpdate(bool asServer)
     {
+        base.StateUpdate(asServer);
+
+        if (!isOwner) return;
         
-        if (automatic)
-    {
-        if (!Input.GetKey(KeyCode.Mouse0))
+        if (automatic && !Input.GetKey(KeyCode.Mouse0) || !automatic && !Input.GetKeyDown(KeyCode.Mouse0))
             return;
-    }
-    
-    else
-    {
-        if (!Input.GetKeyDown(KeyCode.Mouse0))
-            return;
-    }
 
     if (_lastFireTime + fireRate > Time.unscaledTime)
         return;
 
-    _lastFireTime = Time.unscaledTime;
-
-    
     PlayShotEffect();
+    _lastFireTime = Time.unscaledTime;
 
     if (!Physics.Raycast(cameraTransform.position, cameraTransform.forward, out var hit, range, hitLayer))
         return;
 
-    if (hit.transform.TryGetComponent(out PlayerHealth playerHealth))
+    if (!hit.transform.TryGetComponent(out PlayerHealth playerHealth))
         {
             if (environmentHitEffect)
             {
                 Instantiate(environmentHitEffect, hit.point, Quaternion.LookRotation(hit.normal));
             }
-            playerHealth.ChangeHealth(-damage);
+            return;
         }
+    
+        if (playerHitEffect)
+            {
+                Instantiate(playerHitEffect, hit.point, Quaternion.LookRotation(hit.normal));
+            }
+        playerHealth.ChangeHealth(-damage);
     }
 
     
