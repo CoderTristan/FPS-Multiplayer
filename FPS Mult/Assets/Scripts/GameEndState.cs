@@ -22,6 +22,20 @@ public class GameEndState : StateNode
             return;
         }
 
+        if (!InstanceHandler.TryGetInstance(out EndGameView endGameView))
+        {
+            Debug.LogError("No EndGameView found in scene!");
+            return;
+        }
+        if (!InstanceHandler.TryGetInstance(out GameViewManager gameViewManager))
+        {
+            Debug.LogError("No GameViewManager found in scene!");
+            return;
+        }
+
+        endGameView.SetWinner(winner);
+        gameViewManager.ShowView<EndGameView>();
+
         Debug.Log($"{winner} won the game!");
     }
 }

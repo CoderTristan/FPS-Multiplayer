@@ -88,22 +88,34 @@ public class Gun : StateNode
 
     if (!hit.transform.TryGetComponent(out PlayerHealth playerHealth))
         {
-            if (environmentHitEffect)
-            {
-                Instantiate(environmentHitEffect, hit.point, Quaternion.LookRotation(hit.normal));
-            }
+            EnvironmentHit(hit.point, hit.normal);
             return;
         }
-    
-        if (playerHitEffect)
-            {
-                Instantiate(playerHitEffect, hit.point, Quaternion.LookRotation(hit.normal));
-            }
+        PlayerHit(playerHealth, playerHealth.transform.InverseTransformPoint(hit.point), hit.normal);
         playerHealth.ChangeHealth(-damage);
     }
-
-    
     [ObserversRpc(runLocally:true)]
+
+    private void PlayerHit(PlayerHealth player, Vector3 localPosition, Vector3 normal)
+    {
+        if (playerHitEffect && player != null)
+        {
+            Instantiate(playerHitEffect, player.transform.TransformPoint(localPosition), Quaternion.LookRotation(normal));
+        }
+    }
+
+    [ObserversRpc(runLocally:true)]
+
+    private void EnvironmentHit(Vector3 position, Vector3 normal)
+    {
+        if (environmentHitEffect)
+        {
+            Instantiate(environmentHitEffect, position, Quaternion.LookRotation(normal));
+        }
+    }
+
+    [ObserversRpc(runLocally:true)]
+
     private void PlayShotEffect()
     {
         if (muzzleFlash == null) return;
