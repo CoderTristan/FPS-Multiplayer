@@ -1,1 +1,1 @@
-An FPS multiplayer game. 
+An FPS multiplayer game made with Unity and Purrnet.
